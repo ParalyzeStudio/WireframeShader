@@ -172,9 +172,9 @@ public class Triangle
      * **/
     public void RebuildAtIndex(int index)
     {
-        m_vertices[0] = new Vertex(m_vertices[0].m_position, index);
-        m_vertices[1] = new Vertex(m_vertices[1].m_position, index + 1);
-        m_vertices[2] = new Vertex(m_vertices[2].m_position, index + 2);
+        m_vertices[0] = new Vertex(m_vertices[0].m_position, index, m_vertices[0].m_color, m_vertices[0].m_uv);
+        m_vertices[1] = new Vertex(m_vertices[1].m_position, index + 1, m_vertices[1].m_color, m_vertices[1].m_uv);
+        m_vertices[2] = new Vertex(m_vertices[2].m_position, index + 2, m_vertices[2].m_color, m_vertices[2].m_uv);
 
         m_vertices[0].m_mass = new Vector3(1, 0, 0);
         m_vertices[1].m_mass = new Vector3(0, 1, 0);

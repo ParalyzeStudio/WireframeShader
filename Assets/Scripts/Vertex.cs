@@ -5,6 +5,8 @@ public class Vertex
 {
     public Vector3 m_position { get; set; } // location of this point
     public Vector3 m_mass { get; set; } //mass of this vertex in the barycentric coordinate system
+    public Color m_color { get; set; } //color at this vertex
+    public Vector2 m_uv { get; set; } //uv coordinate at this vertex
 
     private int m_iID; // place of vertex in original list
     public int ID
@@ -34,14 +36,23 @@ public class Vertex
         }
     }
 
-    public Vertex(Vector3 v, int _id)
+    public Vertex(Vector3 v, int id)
     {
         m_position = v;
-        m_iID = _id;
+        m_iID = id;
         m_mass = Vector3.zero;
+
+        m_color = Color.black;
+        m_uv = Vector2.zero;
 
         m_neighbors = new List<Vertex>(3);
         m_adjacentTriangles = new List<Triangle>(3);
+    }
+
+    public Vertex(Vector3 v, int id, Color color, Vector2 uv) : this(v, id)
+    {
+        m_color = color;
+        m_uv = uv;
     }
 
     public void AddAdjacentTriangle(Triangle triangle)
