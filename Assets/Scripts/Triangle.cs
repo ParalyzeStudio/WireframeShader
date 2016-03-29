@@ -13,15 +13,6 @@ public class Triangle
         }
     }
 
-    private Vector3 m_normal; // orthogonal unit vector
-    public Vector3 Normal
-    {
-        get
-        {
-            return m_normal;
-        }
-    }
-
     private List<Triangle> m_adjacentTriangles; // adjacent triangles
     public List<Triangle> AdjacentTriangles
     {
@@ -42,27 +33,7 @@ public class Triangle
 
         m_adjacentTriangles = new List<Triangle>();
         m_massesAssigned = false;
-
-        ComputeNormal();
-    }
-
-    public void ComputeNormal()
-    {
-        Vector3 v0 = m_vertices[0].m_position;
-        Vector3 v1 = m_vertices[1].m_position;
-        Vector3 v2 = m_vertices[2].m_position;
-
-        Vector3 u = v1 - v0;
-        Vector3 v = v2 - v0;
-
-        Vector3 crossProduct = new Vector3(u.y * v.z - u.z * v.y,
-                                           u.z * v.x - u.x * v.z,
-                                           u.x * v.y - u.y * v.x);
-
-        crossProduct.Normalize();
-
-        m_normal = crossProduct;
-    }
+    }   
 
     public bool HasVertex(Vertex v)
     {
@@ -118,28 +89,28 @@ public class Triangle
         Vector3 sum = Vector3.zero;
         for (int i = 0; i != 3; i++)
         {
-            sum += m_vertices[i].m_mass;
+            sum += m_vertices[i].Properties.m_mass;
         }
 
         for (int i = 0; i != 3; i++)
         {
             Vertex vertex = m_vertices[i];
-            if (vertex.m_mass == Vector3.zero)
+            if (vertex.Properties.m_mass == Vector3.zero)
             {
                 //Find the first available mass and assign it to this vertex
                 if (sum.x == 0)
                 {
-                    vertex.m_mass = new Vector3(1, 0, 0);
+                    vertex.Properties.m_mass = new Vector3(1, 0, 0);
                     sum.x = 1;
                 }
                 else if (sum.y == 0)
                 {
-                    vertex.m_mass = new Vector3(0, 1, 0);
+                    vertex.Properties.m_mass = new Vector3(0, 1, 0);
                     sum.y = 1;
                 }
                 else //there cannot be any other case than (sum.z == 0)
                 {
-                    vertex.m_mass = new Vector3(0, 0, 1);
+                    vertex.Properties.m_mass = new Vector3(0, 0, 1);
                     sum.z = 1;
                 }
             }
@@ -155,13 +126,13 @@ public class Triangle
     {
         for (int i = 0; i != 3; i++)
         {
-            if (m_vertices[i].m_mass == Vector3.zero)
+            if (m_vertices[i].Properties.m_mass == Vector3.zero)
                 return false;
         }
 
-        if (m_vertices[0].m_mass == m_vertices[1].m_mass ||
-            m_vertices[0].m_mass == m_vertices[2].m_mass ||
-            m_vertices[1].m_mass == m_vertices[2].m_mass)
+        if (m_vertices[0].Properties.m_mass == m_vertices[1].Properties.m_mass ||
+            m_vertices[0].Properties.m_mass == m_vertices[2].Properties.m_mass ||
+            m_vertices[1].Properties.m_mass == m_vertices[2].Properties.m_mass)
             return true;
 
         return false;
@@ -172,12 +143,23 @@ public class Triangle
      * **/
     public void RebuildAtIndex(int index)
     {
-        m_vertices[0] = new Vertex(m_vertices[0].m_position, index, m_vertices[0].m_color, m_vertices[0].m_uv);
-        m_vertices[1] = new Vertex(m_vertices[1].m_position, index + 1, m_vertices[1].m_color, m_vertices[1].m_uv);
-        m_vertices[2] = new Vertex(m_vertices[2].m_position, index + 2, m_vertices[2].m_color, m_vertices[2].m_uv);
+        Vertex.VertexProperties vertex1Properties = new Vertex.VertexProperties(m_vertices[0].Properties);
+        Vertex.VertexProperties vertex2Properties = new Vertex.VertexProperties(m_vertices[1].Properties);
+        Vertex.VertexProperties vertex3Properties = new Vertex.VertexProperties(m_vertices[2].Properties);
+        vertex1Properties.m_mass = new Vector3(1, 0, 0);
+        vertex2Properties.m_mass = new Vector3(0, 1, 0);
+        vertex3Properties.m_mass = new Vector3(0, 0, 1);
 
-        m_vertices[0].m_mass = new Vector3(1, 0, 0);
-        m_vertices[1].m_mass = new Vector3(0, 1, 0);
-        m_vertices[2].m_mass = new Vector3(0, 0, 1);
+        m_vertices[0] = new Vertex(index, vertex1Properties);
+        m_vertices[1] = new Vertex(index + 1, vertex2Properties);
+        m_vertices[2] = new Vertex(index + 2, vertex3Properties);
+
+        //m_vertices[0] = new Vertex(m_vertices[0].m_position, index, m_vertices[0].m_color, m_vertices[0].m_uv);
+        //m_vertices[1] = new Vertex(m_vertices[1].m_position, index + 1, m_vertices[1].m_color, m_vertices[1].m_uv);
+        //m_vertices[2] = new Vertex(m_vertices[2].m_position, index + 2, m_vertices[2].m_color, m_vertices[2].m_uv);
+
+        //m_vertices[0].m_mass = new Vector3(1, 0, 0);
+        //m_vertices[1].m_mass = new Vector3(0, 1, 0);
+        //m_vertices[2].m_mass = new Vector3(0, 0, 1);
     }
 }

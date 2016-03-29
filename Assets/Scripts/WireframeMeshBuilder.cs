@@ -9,6 +9,28 @@ public class WireframeMeshBuilder : MonoBehaviour
     private List<Vertex> m_vertices;
     private List<Triangle> m_triangles;
 
+    public void BuildSimple()
+    {
+        Mesh originalMesh = this.GetComponent<MeshFilter>().sharedMesh;
+
+        if (originalMesh == null)
+            throw new System.NullReferenceException("A mesh has to be assigned to the MeshFilter component");
+
+        Mesh newMesh = new Mesh();
+        newMesh.name = originalMesh.name + "_simple";
+
+        newMesh.vertices = originalMesh.vertices;
+        newMesh.triangles = originalMesh.triangles;
+        newMesh.colors = originalMesh.colors;
+        newMesh.normals = originalMesh.normals;
+        newMesh.tangents = originalMesh.tangents;
+        newMesh.uv = originalMesh.uv;
+
+        //Copy the mesh inside the Assets folder
+        AssetDatabase.CreateAsset(newMesh, "Assets/" + newMesh.name + ".asset");
+        AssetDatabase.SaveAssets();
+    }
+
     //public void BuildSimple()
     //{
     //    Mesh originalMesh = this.GetComponent<MeshFilter>().sharedMesh;
@@ -54,8 +76,6 @@ public class WireframeMeshBuilder : MonoBehaviour
         if (originalMesh == null)
             throw new System.NullReferenceException("A mesh has to be assigned to the MeshFilter component");
 
-        
-
         PrepareMeshData(originalMesh);
         AssignMassesToMesh();
 
@@ -75,13 +95,18 @@ public class WireframeMeshBuilder : MonoBehaviour
         Vector3[] vertices = new Vector3[m_vertices.Count];
         Color[] colors = new Color[m_vertices.Count];
         Vector2[] uv = new Vector2[m_vertices.Count];
+        Vector3[] normals = new Vector3[m_vertices.Count];
+        Vector4[] tangents = new Vector4[m_vertices.Count];
         for (int i = 0; i != m_vertices.Count; i++)
         {
-            vertices[i] = m_vertices[i].m_position;
-            Vector3 vertexMass = m_vertices[i].m_mass;
+            Vertex.VertexProperties properties = m_vertices[i].Properties;
+            vertices[i] = properties.m_position;
+            Vector3 vertexMass = properties.m_mass;
             Color mass = new Color(vertexMass.x, vertexMass.y, vertexMass.z, 1);
             colors[i] = mass;
-            uv[i] = m_vertices[i].m_uv;
+            uv[i] = properties.m_uv;
+            normals[i] = properties.m_normal;
+            tangents[i] = properties.m_tangent;
         }
 
         int[] triangles = new int[3 * m_triangles.Count];
@@ -93,16 +118,18 @@ public class WireframeMeshBuilder : MonoBehaviour
             triangles[3 * i + 2] = triangle.Vertices[2].ID;
         }
 
+        //Create a new mesh to hold new data
         Mesh newMesh = new Mesh();
         newMesh.name = originalMesh.name + "_WF";
 
         newMesh.vertices = vertices;
         newMesh.triangles = triangles;
         newMesh.colors = colors;
+        newMesh.normals = normals;
+        newMesh.tangents = tangents;
         newMesh.uv = uv;
 
-        newMesh.RecalculateNormals();
-
+        //Copy the mesh inside the Assets folder
         AssetDatabase.CreateAsset(newMesh, "Assets/" + newMesh.name + ".asset");
         AssetDatabase.SaveAssets();
     }
@@ -116,15 +143,21 @@ public class WireframeMeshBuilder : MonoBehaviour
         int[] originalTriangles = originalMesh.triangles;
         Color[] originalColors = originalMesh.colors;
         Vector2[] originalUV = originalMesh.uv;
+        Vector3[] originalNormals = originalMesh.normals;
+        Vector4[] originalTangents = originalMesh.tangents;
 
         m_vertices = new List<Vertex>(originalVertices.Length);
         for (int i = 0; i != originalVertices.Length; i++)
         {
-            Vertex vertex = new Vertex(originalVertices[i], i);
-            if (originalColors != null && originalColors.Length > 0)
-                vertex.m_color = originalColors[i];
-            if (originalUV != null && originalUV.Length > 0)
-                vertex.m_uv = originalUV[i];
+            Vector3 vertexPosition = originalVertices[i];
+            Color vertexColor = (originalColors != null && originalColors.Length > 0) ? originalColors[i] : Color.black;
+            Vector2 vertexUV = (originalUV != null && originalUV.Length > 0) ? originalUV[i] : Vector2.zero;
+            Vector3 vertexNormal = (originalNormals != null && originalNormals.Length > 0) ? originalNormals[i] : Vector3.zero;
+            Vector4 vertexTangent = (originalTangents != null && originalTangents.Length > 0) ? originalTangents[i] : Vector4.zero;
+
+            Vertex.VertexProperties properties = new Vertex.VertexProperties(vertexPosition, vertexColor, vertexUV, vertexNormal, vertexTangent);
+            Vertex vertex = new Vertex(i, properties);
+
             m_vertices.Add(vertex);
         }
 

@@ -35,10 +35,8 @@ ehthumbs.db
 # ============ #
 # Custom #
 # ============ #
-Assets/Editor
 Assets/Textures
 Assets/Models
 Assets/ImportedModels
-Assets/Editor
 Assets/Standard Assets
 Assets/GeneratedAssets
